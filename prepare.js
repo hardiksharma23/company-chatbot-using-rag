@@ -1,0 +1,40 @@
+import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
+import { pipeline } from "@huggingface/transformers";
+
+const embeddingModel = await pipeline(
+    "feature-extraction",
+    "Xenova/all-MiniLM-L6-v2"
+);
+
+export async function indexTheDocument(filePath) {
+    const loader = new PDFLoader(filePath, { splitPages: false });
+    const doc = await loader.load();
+
+    // console.log(doc[0].pageContent);
+
+    const splitter = new RecursiveCharacterTextSplitter({
+        chunkSize: 500,
+        chunkOverlap: 100,
+    });
+
+    const texts = await splitter.splitText(doc[0].pageContent);
+
+    // console.log(texts.length);
+
+    const embeddings = [];
+
+    for (const text of texts) {
+        const output = await embeddingModel(text, {
+            pooling: "mean",
+            normalize: true,
+        });
+
+        embeddings.push(Array.from(output.data));
+    }
+
+    console.log("Number of embeddings:", embeddings.length);
+    console.log("Embedding dimension:", embeddings[0].length);
+    console.log("First embedding:", embeddings[0]);
+
+}
