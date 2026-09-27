@@ -1,6 +1,7 @@
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { pipeline } from "@huggingface/transformers";
+import { Pinecone } from "@pinecone-database/pinecone";
 
 const embeddingModel = await pipeline(
     "feature-extraction",
@@ -33,8 +34,30 @@ export async function indexTheDocument(filePath) {
         embeddings.push(Array.from(output.data));
     }
 
-    console.log("Number of embeddings:", embeddings.length);
-    console.log("Embedding dimension:", embeddings[0].length);
-    console.log("First embedding:", embeddings[0]);
+    const vectors = embeddings.map((embedding, index) => ({
+        id: `chunk-${index}`,
+        values: embedding,
+        metadata: {
+            text: texts[index]
+        }
+    }));
+
+    // console.log("Vectors prepared:", vectors.length);
+
+    const pc = new Pinecone({
+        apiKey: process.env.PINECONE_API_KEY,
+    });
+
+    const index = pc.index(process.env.PINECONE_INDEX_NAME);
+
+    await index.upsert({
+        records: vectors,
+    });
+
+    console.log("Vectors uploaded to Pinecone successfully!");
+
+    // console.log("Number of embeddings:", embeddings.length);
+    // console.log("Embedding dimension:", embeddings[0].length);
+    // console.log("First embedding:", embeddings[0]);
 
 }
