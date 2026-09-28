@@ -101,7 +101,7 @@ Answer:
                         content: userQuery,
                     },
                 ],
-                model: "openai/gpt-oss-120b",
+                model: "openai/gpt-oss-20b",
             });
 
             console.log(
