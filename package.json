@@ -16,6 +16,8 @@
     "@langchain/core": "^1.2.9",
     "@langchain/textsplitters": "^1.0.1",
     "@pinecone-database/pinecone": "^9.0.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
     "grok-sdk": "^0.0.1-security",
     "groq-sdk": "^1.6.0",
     "langchain": "^1.5.10",
